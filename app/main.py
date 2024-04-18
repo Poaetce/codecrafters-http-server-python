@@ -2,7 +2,7 @@ import socket
 
 
 def main() -> None:
-    server_socket: socket.socket = socket.create_server(("localhost", 4221), reuse_port=True)
+    server_socket: socket.socket = socket.create_server(('localhost', 4221), reuse_port=True)
     connection: socket.socket
     address: tuple[str, int]
     connection, address = server_socket.accept()
