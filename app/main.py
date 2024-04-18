@@ -20,8 +20,8 @@ def main() -> None:
     connection, address = server_socket.accept()
 
     with connection:
-        request: Request = request(connection.recv(1024))
-        
+        request: Request = Request(connection.recv(1024))
+
         if request.path == '/':
             response: str = "HTTP/1.1 200 OK\r\n\r\n"
         else:
