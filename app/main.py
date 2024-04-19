@@ -26,7 +26,7 @@ def main() -> None:
             response: str = "HTTP/1.1 200 OK\r\n\r\n"
         elif request.path[1] == 'echo':
             message: str = request.path[2]
-            response: str = f"HTTP/1.1 200 OK\r\nContent-Length: 3\r\nContent-Type: text/plain\r\n\r\n{message}\r\n"
+            response: str = f"HTTP/1.1 200 OK\r\nContent-Length: {len(message)}\r\nContent-Type: text/plain\r\n\r\n{message}\r\n"
         else:
             response: str = "HTTP/1.1 404 Not Found\r\n\r\n"
 
