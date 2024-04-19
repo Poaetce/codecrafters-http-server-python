@@ -10,7 +10,8 @@ class Request:
         self.path: list[str] = request_line[1].split('/')
         self.version: str = request_line[0]
 
-        self.headers: list[str] = lines[1:]
+        self.headers: dict[str, str] = {}
+        self.headers[0], self.headers[1] = (line.split(': ') for line in lines[1:])
 
 
 def main() -> None:
@@ -26,6 +27,9 @@ def main() -> None:
             response: str = "HTTP/1.1 200 OK\r\n\r\n"
         elif request.path[1] == 'echo':
             message: str = '/'.join(request.path[2:])
+            response: str = f"HTTP/1.1 200 OK\r\nContent-Length: {len(message)}\r\nContent-Type: text/plain\r\n\r\n{message}\r\n"
+        elif request.path[1] == 'user-agent':
+            message: str = request.headers['User-Agent']
             response: str = f"HTTP/1.1 200 OK\r\nContent-Length: {len(message)}\r\nContent-Type: text/plain\r\n\r\n{message}\r\n"
         else:
             response: str = "HTTP/1.1 404 Not Found\r\n\r\n"
