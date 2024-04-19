@@ -11,7 +11,8 @@ class Request:
         self.version: str = request_line[0]
 
         self.headers: dict[str, str] = {}
-        self.headers[0], self.headers[1] = (line.split(': ') for line in lines[1:])
+        for line in lines[1:]:
+            self.headers += {line.split(': ')[0], line.split(': ')[1]}
 
 
 def main() -> None:
