@@ -1,4 +1,5 @@
 import socket
+import threading
 
 
 class Request:
@@ -19,11 +20,18 @@ class Request:
 
 
 def main() -> None:
-    server_socket: socket.socket = socket.create_server(('localhost', 4221), reuse_port=True)
-    connection: socket.socket
-    address: tuple[str, int]
-    connection, address = server_socket.accept()
+    server_socket: socket.socket = socket.create_server(('localhost', 4221), reuse_port = True)
 
+    while True:
+        connection: socket.socket
+        address: tuple[str, int]
+        connection, address = server_socket.accept()
+
+        thread: threading.Thread = threading.Thread(target = connect, args = [connection])
+        thread.start()
+
+
+def connect(connection: socket.socket) -> None:
     with connection:
         request: Request = Request(connection.recv(1024))
 
