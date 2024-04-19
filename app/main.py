@@ -10,7 +10,7 @@ class Request:
         self.path: list[str] = request_line[1].split('/')
         self.version: str = request_line[0]
 
-        # self.headers: dict[str, str] = {}
+        self.headers: dict[str, str] = {}
         # for line in lines[1:]:
         #     split_line: list[str] = line.split(': ')
         #     self.headers[split_line[0]] = split_line[1]
