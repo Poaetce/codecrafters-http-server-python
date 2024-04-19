@@ -5,10 +5,10 @@ class Request:
     def __init__(self, request: bytes) -> None:
         lines: list[str] = request.decode().splitlines()
 
-        self.http_method: str
-        self.path: str
-        self.http_version: str
-        self.http_method, self.path, self.http_version = lines[0].split(' ')
+        request_line: list[str] = lines[0].split(' ')
+        self.method: str = request_line[0]
+        self.path: list[str] = request_line[1].split('/')
+        self.version: str = request_line[0]
 
         self.headers: list[str] = lines[1:]
 
@@ -22,8 +22,11 @@ def main() -> None:
     with connection:
         request: Request = Request(connection.recv(1024))
 
-        if request.path == '/':
+        if request.path[1] == '':
             response: str = "HTTP/1.1 200 OK\r\n\r\n"
+        elif request.path[1] == 'echo':
+            message: str = request.path[2]
+            response: str = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\n\r\n{message}"
         else:
             response: str = "HTTP/1.1 404 Not Found\r\n\r\n"
 
