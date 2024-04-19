@@ -15,8 +15,6 @@ class Request:
             split_line: list[str] = line.split(': ')
             self.headers[split_line[0]] = split_line[1]
 
-        print(self.headers)
-
 
 def main() -> None:
     server_socket: socket.socket = socket.create_server(('localhost', 4221), reuse_port=True)
@@ -26,6 +24,7 @@ def main() -> None:
 
     with connection:
         request: Request = Request(connection.recv(1024))
+        print(request.__dict__)
 
         if request.path[1] == '':
             response: str = "HTTP/1.1 200 OK\r\n\r\n"
