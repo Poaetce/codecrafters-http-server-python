@@ -12,8 +12,10 @@ class Request:
 
         self.headers: dict[str, str] = {}
         for line in lines[1:]:
+            if not line:
+                break
             split_line: list[str] = line.split(': ')
-            print(split_line)
+            self.headers.update({split_line[0]: split_line[1]})
 
 
 def main() -> None:
@@ -24,7 +26,6 @@ def main() -> None:
 
     with connection:
         request: Request = Request(connection.recv(1024))
-        print(request.__dict__)
 
         if request.path[1] == '':
             response: str = "HTTP/1.1 200 OK\r\n\r\n"
