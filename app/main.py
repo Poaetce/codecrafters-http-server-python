@@ -13,7 +13,7 @@ class Request:
         self.headers: dict[str, str] = {}
         for line in lines[1:]:
             split_line: list[str] = line.split(': ')
-            self.headers[split_line[0]] = split_line[1]
+            print(split_line)
 
 
 def main() -> None:
