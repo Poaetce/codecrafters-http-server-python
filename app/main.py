@@ -26,7 +26,7 @@ def respond(status_code: int, content: str | None = None, content_type: str | No
     
     status_line: str
     headers: list[str] = []
-    body: str
+    body: str = ''
 
     match status_code:
         case 200:
