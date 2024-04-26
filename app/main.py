@@ -7,7 +7,6 @@ import argparse
 class Request:
     def __init__(self, request: bytes) -> None:
         lines: list[str] = request.decode().splitlines()
-        print(lines)
 
         request_line: list[str] = lines[0].split(' ')
         self.method: str = request_line[0]
@@ -21,19 +20,23 @@ class Request:
             split_line: list[str] = line.split(': ')
             self.headers.update({split_line[0]: split_line[1]})
 
+        self.body = lines[-1]
+
 
 def respond(status_code: int, content: str | None = None, content_type: str | None = None) -> str:
     CRLF: str = '\r\n'
     
-    status_line: str
+    status_line: str = 'HTTP/1.1 '
     headers: list[str] = []
     body: str = ''
 
     match status_code:
         case 200:
-            status_line = 'HTTP/1.1 200 OK'
+            status_line += '200 OK'
+        case 201:
+            status_line += '201 Created'
         case 404:
-            status_line = 'HTTP/1.1 404 Not Found'
+            status_line += '404 Not Found'
 
     if content:
         headers.append(f'Content-Length: {len(content)}')
@@ -86,9 +89,10 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                     )
                 
             case 'files':
+                file_path: str = os.path.join(directory, request.path[-1])
+
                 match request.method:
                     case 'GET':
-                        file_path: str = os.path.join(directory, request.path[-1])
                         if os.path.exists(file_path):
                             with open(file_path, 'r') as file:
                                 response = respond(
@@ -100,7 +104,9 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                             response = respond(404)
                     
                     case 'POST':
-                        pass
+                        with open(file_path, 'w') as file:
+                            file.write(request.body)
+                        response = respond(201)
 
             case _:
                 response = respond(404)
