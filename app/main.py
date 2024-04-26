@@ -1,5 +1,7 @@
 import socket
 import threading
+import os
+import argparse
 
 
 class Request:
@@ -19,7 +21,33 @@ class Request:
             self.headers.update({split_line[0]: split_line[1]})
 
 
+def respond(status_code: int, content: str | None = None, content_type: str | None = None) -> str:
+    CRLF: str = '\r\n'
+    
+    status_line: str
+    headers: list[str] = []
+    body: str
+
+    match status_code:
+        case 200:
+            status_line = 'HTTP/1.1 200 OK'
+        case 404:
+            status_line = 'HTTP/1.1 404 Not Found'
+
+    if content:
+        headers.append(f'Content-Length: {len(content)}')
+        headers.append(f'Content-Type: {content_type}')
+
+        body =  CRLF + content +  CRLF
+
+    return CRLF.join([status_line,CRLF.join(headers),body])
+
+
 def main() -> None:
+    argument_parser: argparse.ArgumentParser = argparse.ArgumentParser()
+    argument_parser.add_argument('--directory')
+    arguments: argparse.Namespace = argument_parser.parse_args()
+
     server_socket: socket.socket = socket.create_server(('localhost', 4221), reuse_port = True)
 
     while True:
@@ -31,21 +59,46 @@ def main() -> None:
         thread.start()
 
 
-def connect(connection: socket.socket) -> None:
+def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
+    directory: str = arguments.directory or '' 
+
     with connection:
         request: Request = Request(connection.recv(1024))
+        response: str
 
-        if request.path[1] == '':
-            response: str = "HTTP/1.1 200 OK\r\n\r\n"
-        elif request.path[1] == 'echo':
-            message: str = '/'.join(request.path[2:])
-            response: str = f"HTTP/1.1 200 OK\r\nContent-Length: {len(message)}\r\nContent-Type: text/plain\r\n\r\n{message}\r\n"
-        elif request.path[1] == 'user-agent':
-            message: str = request.headers['User-Agent']
-            response: str = f"HTTP/1.1 200 OK\r\nContent-Length: {len(message)}\r\nContent-Type: text/plain\r\n\r\n{message}\r\n"
-        else:
-            response: str = "HTTP/1.1 404 Not Found\r\n\r\n"
+        match request.path[1]:
+            case '':
+                response = respond(200)
 
+            case 'echo':
+                response = respond(
+                    200,
+                    '/'.join(request.path[2:]),
+                    'text/plain',
+                    )
+                
+            case 'user-agent':
+                response = respond(
+                    200,
+                    request.headers['User-Agent'],
+                    'text/plain',
+                    )
+                
+            case 'files':
+                file_path: str = os.path.join(directory, request.path[-1])
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as file:
+                        response = respond(
+                            200,
+                            file.read(),
+                            'application/octet-stream',
+                        )
+                else:
+                    response = respond(404)
+                    
+            case _:
+                response = respond(404)
+        
         connection.sendall(response.encode())
 
 
