@@ -55,7 +55,7 @@ def main() -> None:
         address: tuple[str, int]
         connection, address = server_socket.accept()
 
-        thread: threading.Thread = threading.Thread(target = connect, args = [connection])
+        thread: threading.Thread = threading.Thread(target = connect, args = [connection, arguments])
         thread.start()
 
 
@@ -95,7 +95,7 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                         )
                 else:
                     response = respond(404)
-                    
+
             case _:
                 response = respond(404)
         
