@@ -54,21 +54,19 @@ def main() -> None:
         connection: socket.socket
         address: tuple[str, int]
         connection, address = server_socket.accept()
-        print(f"connection from {address[0]}:{address[1]}")
 
         thread: threading.Thread = threading.Thread(target = connect, args = [connection, arguments])
         thread.start()
 
 
 def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
-    print(f"connected")
-
     directory: str = arguments.directory or '' 
 
     with connection:
         request: Request = Request(connection.recv(1024))
         response: str
 
+        print(request.path[1])
         match request.path[1]:
             case '':
                 response = respond(200)
@@ -101,8 +99,6 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
 
             case _:
                 response = respond(404)
-        
-        print(f"responding with {response}")
 
         connection.sendall(response.encode())
 
