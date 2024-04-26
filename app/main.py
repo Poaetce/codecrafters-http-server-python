@@ -54,12 +54,15 @@ def main() -> None:
         connection: socket.socket
         address: tuple[str, int]
         connection, address = server_socket.accept()
+        print(f"connection at {address[0]}:{address[1]}")
 
         thread: threading.Thread = threading.Thread(target = connect, args = [connection, arguments])
         thread.start()
 
 
 def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
+    print("connected")
+
     directory: str = arguments.directory or '' 
 
     with connection:
