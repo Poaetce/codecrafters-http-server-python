@@ -40,8 +40,10 @@ def respond(status_code: int, content: str | None = None, content_type: str | No
 
         body =  CRLF + content +  CRLF
 
-    print(status_line,CRLF.join(headers),body)
-    return CRLF.join([status_line,CRLF.join(headers),body])
+    print(status_line)
+    print(CRLF.join(headers))
+    print(body)
+    return CRLF.join([status_line, CRLF.join(headers), body])
 
 
 def main() -> None:
