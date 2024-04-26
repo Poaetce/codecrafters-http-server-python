@@ -61,7 +61,7 @@ def main() -> None:
 
 
 def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
-    print("connected")
+    print(f"connected with {arguments}")
 
     directory: str = arguments.directory or '' 
 
