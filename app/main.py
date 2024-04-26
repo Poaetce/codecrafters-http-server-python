@@ -7,6 +7,7 @@ import argparse
 class Request:
     def __init__(self, request: bytes) -> None:
         lines: list[str] = request.decode().splitlines()
+        print(lines)
 
         request_line: list[str] = lines[0].split(' ')
         self.method: str = request_line[0]
@@ -85,16 +86,21 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                     )
                 
             case 'files':
-                file_path: str = os.path.join(directory, request.path[-1])
-                if os.path.exists(file_path):
-                    with open(file_path, 'r') as file:
-                        response = respond(
-                            200,
-                            file.read(),
-                            'application/octet-stream',
-                        )
-                else:
-                    response = respond(404)
+                match request.method:
+                    case 'GET':
+                        file_path: str = os.path.join(directory, request.path[-1])
+                        if os.path.exists(file_path):
+                            with open(file_path, 'r') as file:
+                                response = respond(
+                                    200,
+                                    file.read(),
+                                    'application/octet-stream',
+                                )
+                        else:
+                            response = respond(404)
+                    
+                    case 'POST':
+                        pass
 
             case _:
                 response = respond(404)
