@@ -66,7 +66,7 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
         request: Request = Request(connection.recv(1024))
         response: str
 
-        print(request.path.__dict__)
+        print(request.__dict__)
         match request.path[1]:
             case '':
                 response = respond(200)
