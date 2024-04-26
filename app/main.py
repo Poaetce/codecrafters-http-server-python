@@ -40,6 +40,8 @@ def respond(status_code: int, content: str | None = None, content_type: str | No
 
         body =  CRLF + content +  CRLF
 
+
+    print(CRLF.join([status_line,CRLF.join(headers),body]))
     return CRLF.join([status_line,CRLF.join(headers),body])
 
 
@@ -66,7 +68,6 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
         request: Request = Request(connection.recv(1024))
         response: str
 
-        print(request.__dict__)
         match request.path[1]:
             case '':
                 response = respond(200)
