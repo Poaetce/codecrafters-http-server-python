@@ -10,14 +10,14 @@ def encoding_valid(encoding: str) -> bool:
     ]
 
 
-def encode_content(encoding_type: str, content: str) -> str:
+def encode_content(encoding_type: str, content: bytes) -> bytes:
     match encoding_type:
         case 'gzip':
             import gzip
-            return gzip.compress(content.encode()).decode()
+            return gzip.compress(content)
             
         case _:
-            return ''
+            return b''
 
 
 class Request:
@@ -41,32 +41,32 @@ class Request:
 
 def respond(
         status_code: int,
-        content: str | None = None,
+        content: bytes | None = None,
         content_type: str | None = None,
         content_encoding: str | None = None,
-) -> str:
-    CRLF: str = '\r\n'
+) -> bytes:
+    CRLF: bytes = b'\r\n'
     
-    status_line: str = 'HTTP/1.1 '
-    headers: list[str] = []
-    body: str = ''
+    status_line: bytes = b'HTTP/1.1 '
+    headers: list[bytes] = []
+    body: bytes = b''
 
     match status_code:
         case 200:
-            status_line += '200 OK'
+            status_line += b'200 OK'
         case 201:
-            status_line += '201 Created'
+            status_line += b'201 Created'
         case 404:
-            status_line += '404 Not Found'
+            status_line += b'404 Not Found'
 
     if content:
-        headers.append(f'Content-Length: {len(content)}')
-        headers.append(f'Content-Type: {content_type}')
+        headers.append(f'Content-Length: {len(content)}'.encode())
+        headers.append(f'Content-Type: {content_type}'.encode())
 
         body =  CRLF + content +  CRLF
         
         if content_encoding:
-            headers.append(f'Content-Encoding: {content_encoding}')
+            headers.append(f'Content-Encoding: {content_encoding}'.encode())
 
     return CRLF.join([status_line, CRLF.join(headers), body])
 
@@ -92,14 +92,14 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
 
     with connection:
         request: Request = Request(connection.recv(1024))
-        response: str
+        response: bytes
 
         match request.path[1]:
             case '':
                 response = respond(200)
 
             case 'echo':
-                content: str = '/'.join(request.path[2:])
+                content: bytes = '/'.join(request.path[2:]).encode()
 
                 accept_encoding: list[str] | None = None
                 content_encoding: str | None = None
@@ -124,7 +124,7 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
             case 'user-agent':
                 response = respond(
                     200,
-                    request.headers['user-agent'][0],
+                    request.headers['user-agent'][0].encode(),
                     'text/plain',
                     )
                 
@@ -137,7 +137,7 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                             with open(file_path, 'r') as file:
                                 response = respond(
                                     200,
-                                    file.read(),
+                                    file.read().encode(),
                                     'application/octet-stream',
                                 )
                         else:
@@ -151,7 +151,7 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
             case _:
                 response = respond(404)
 
-        connection.sendall(response.encode())
+        connection.sendall(response)
 
 
 if __name__ == '__main__':
