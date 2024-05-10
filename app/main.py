@@ -89,11 +89,15 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                 response = respond(200)
 
             case 'echo':
+                accept_encoding: str | None = None
+                if 'accept-encoding' in request.headers:
+                    accept_encoding = request.headers['accept-encoding'] if encoding_valid(request.headers['accept-encoding']) else None
+
                 response = respond(
                     200,
                     '/'.join(request.path[2:]),
                     'text/plain',
-                    request.headers['accept-encoding'] if encoding_valid(request.headers['accept-encoding']) else None,
+                    accept_encoding,
                     )
                 
             case 'user-agent':
