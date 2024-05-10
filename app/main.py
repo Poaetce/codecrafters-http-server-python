@@ -4,6 +4,22 @@ import os
 import argparse
 
 
+def encoding_valid(encoding: str) -> bool:
+    return encoding in [
+        'gzip',
+    ]
+
+
+def encode_content(encoding_type: str, content: str) -> str:
+    match encoding_type:
+        case 'gzip':
+            import gzip
+            return gzip.compress(content.encode()).decode()
+            
+        case _:
+            return ''
+
+
 class Request:
     def __init__(self, request: bytes) -> None:
         lines: list[str] = request.decode().splitlines()
@@ -21,12 +37,6 @@ class Request:
             self.headers[split_line[0].lower()] = split_line[1].split(', ')
 
         self.body = lines[-1]
-
-
-def encoding_valid(encoding: str) -> bool:
-    return encoding in [
-        'gzip',
-    ]
 
 
 def respond(
@@ -89,6 +99,8 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                 response = respond(200)
 
             case 'echo':
+                content: str = '/'.join(request.path[2:])
+
                 accept_encoding: list[str] | None = None
                 content_encoding: str | None = None
 
@@ -99,9 +111,12 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                             content_encoding = encoding_type
                             break
 
+                if content_encoding:
+                    content = encode_content(content_encoding, content)
+
                 response = respond(
                     200,
-                    '/'.join(request.path[2:]),
+                    content,
                     'text/plain',
                     content_encoding,
                     )
