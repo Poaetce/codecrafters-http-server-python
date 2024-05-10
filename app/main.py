@@ -14,7 +14,7 @@ def encode_content(encoding_type: str, content: str) -> str:
     match encoding_type:
         case 'gzip':
             import gzip
-            return gzip.compress(content.encode()).hex()
+            return str(gzip.compress(content.encode()))
             
         case _:
             return ''
