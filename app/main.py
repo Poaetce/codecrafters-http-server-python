@@ -13,12 +13,12 @@ class Request:
         self.path: list[str] = request_line[1].split('/')
         self.version: str = request_line[0]
 
-        self.headers: dict[str, str] = {}
+        self.headers: dict[str, list[str]] = {}
         for line in lines[1:]:
             if not line:
                 break
             split_line: list[str] = line.split(': ')
-            self.headers[split_line[0].lower()] = split_line[1]
+            self.headers[split_line[0].lower()] = split_line[1].split(', ')
 
         self.body = lines[-1]
 
@@ -89,21 +89,27 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                 response = respond(200)
 
             case 'echo':
-                accept_encoding: str | None = None
+                accept_encoding: list[str] | None = None
+                content_encoding: str | None = None
+
                 if 'accept-encoding' in request.headers:
-                    accept_encoding = request.headers['accept-encoding'] if encoding_valid(request.headers['accept-encoding']) else None
+                    accept_encoding = request.headers['accept-encoding']
+                    for encoding_type in accept_encoding:
+                        if encoding_valid(encoding_type):
+                            content_encoding = encoding_type
+                            break
 
                 response = respond(
                     200,
                     '/'.join(request.path[2:]),
                     'text/plain',
-                    accept_encoding,
+                    content_encoding,
                     )
                 
             case 'user-agent':
                 response = respond(
                     200,
-                    request.headers['user-agent'],
+                    request.headers['user-agent'][0],
                     'text/plain',
                     )
                 
