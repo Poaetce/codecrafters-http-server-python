@@ -18,12 +18,23 @@ class Request:
             if not line:
                 break
             split_line: list[str] = line.split(': ')
-            self.headers.update({split_line[0]: split_line[1]})
+            self.headers[split_line[0].lower()] = split_line[1]
 
         self.body = lines[-1]
 
 
-def respond(status_code: int, content: str | None = None, content_type: str | None = None) -> str:
+def encoding_valid(encoding: str) -> bool:
+    return encoding in [
+        'gzip',
+    ]
+
+
+def respond(
+        status_code: int,
+        content: str | None = None,
+        content_type: str | None = None,
+        content_encoding: str | None = None,
+) -> str:
     CRLF: str = '\r\n'
     
     status_line: str = 'HTTP/1.1 '
@@ -43,6 +54,9 @@ def respond(status_code: int, content: str | None = None, content_type: str | No
         headers.append(f'Content-Type: {content_type}')
 
         body =  CRLF + content +  CRLF
+        
+        if content_encoding:
+            headers.append(f'Content-Encoding: {content_encoding}')
 
     return CRLF.join([status_line, CRLF.join(headers), body])
 
@@ -79,12 +93,13 @@ def connect(connection: socket.socket, arguments: argparse.Namespace) -> None:
                     200,
                     '/'.join(request.path[2:]),
                     'text/plain',
+                    request.headers['accept-encoding'] if encoding_valid(request.headers['accept-encoding']) else None,
                     )
                 
             case 'user-agent':
                 response = respond(
                     200,
-                    request.headers['User-Agent'],
+                    request.headers['user-agent'],
                     'text/plain',
                     )
                 
